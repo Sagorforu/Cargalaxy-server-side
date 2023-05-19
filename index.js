@@ -35,7 +35,7 @@ async function run() {
       const result = await toysCollection.insertOne(toy);
       res.send(result);
     })
-    app.get('/allCards', async(req, res) => {
+    app.get('/allToys', async(req, res) => {
       const result = await toysCollection.find({}).limit(20).toArray();
       res.send(result);
     })
@@ -43,6 +43,12 @@ async function run() {
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)}
       const result = await toysCollection.findOne(filter);
+      res.send(result);
+    })
+    app.delete('/singleToy/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await toysCollection.deleteOne(query);
       res.send(result);
     })
 
