@@ -39,6 +39,11 @@ async function run() {
       const result = await toysCollection.find({}).limit(20).toArray();
       res.send(result);
     })
+    app.get('/myToys/:email', async(req, res) => {
+      const query = { sellerEmail: req.params.email}
+      const result = await toysCollection.find(query).limit(20).toArray();
+      res.send(result);
+    })
     app.get('/singleToy/:id', async(req,res) => {
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)}
