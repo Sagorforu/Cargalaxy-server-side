@@ -27,21 +27,23 @@ async function run() {
 
     const toysCollection = client.db("toysDB").collection("toys");
 
-    // creating index 
-    const indexKeys = { toyName: 1, sellerName: 1 };
-    const indexOptions = { name: "toySeller" };
-    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    // creating index
+    // const indexKeys = { toyName: 1, sellerName: 1 };
+    // const indexOptions = { name: "toySeller" };
+    // const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
-    app.get('/searchByToyName/:text', async(req, res) => {
+    app.get("/searchByToyName/:text", async (req, res) => {
       const searchText = req.params.text;
-      const result = await toysCollection.find({
-        $or: [
-          { toyName: { $regex: searchText, $options: "i" } },
-          { sellerName: { $regex: searchText, $options: "i" } },
-        ],
-      }).toArray();
+      const result = await toysCollection
+        .find({
+          $or: [
+            { toyName: { $regex: searchText, $options: "i" } },
+            { sellerName: { $regex: searchText, $options: "i" } },
+          ],
+        })
+        .toArray();
       res.send(result);
-    })
+    });
 
     app.post("/addToy", async (req, res) => {
       const toy = req.body;
@@ -54,7 +56,13 @@ async function run() {
     });
     app.get("/myToys/:email", async (req, res) => {
       const query = { sellerEmail: req.params.email };
-      const result = await toysCollection.find(query).limit(20).toArray();
+      const sort = req.query.sort;
+      console.log(sort);
+      const result = await toysCollection
+        .find(query)
+        .sort({ price: sort === "asc" ? 1 : -1 })
+        .limit(20)
+        .toArray();
       res.send(result);
     });
     app.get("/singleToy/:id", async (req, res) => {
@@ -70,15 +78,9 @@ async function run() {
       const options = { upsert: true };
       const updated = {
         $set: {
-          toyName: updatedToy.toyName,
-          sellerName: updatedToy.sellerName,
-          sellerEmail: updatedToy.sellerEmail,
-          Picture: updatedToy.photo,
           price: updatedToy.price,
-          rating: updatedToy.rating,
           quantity: updatedToy.quantity,
           description: updatedToy.description,
-          subcategory: updatedToy.selectedValue,
         },
       };
       const result = await toysCollection.updateOne(filter, updated, options);
@@ -92,10 +94,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
